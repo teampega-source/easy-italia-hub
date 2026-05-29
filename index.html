@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Italia Hub - AI Assistant</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:system-ui,-apple-system,sans-serif;background:#f5f7fa;color:#1a1a2e}
+        nav{position:fixed;top:0;width:100%;background:#0f1d3d;padding:15px 20px;z-index:100;display:flex;justify-content:space-between;align-items:center}
+        nav .logo{color:#fff;font-size:1.3em;font-weight:700}
+        nav .logo span{background:linear-gradient(135deg,#f59e0b,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        nav button{background:#f59e0b;color:#fff;border:none;padding:10px 18px;border-radius:25px;font-weight:600;font-size:0.9em}
+        .container{max-width:800px;margin:80px auto 0;padding:20px}
+        .hero{background:linear-gradient(135deg,#0f1d3d,#1e3a5f);color:#fff;text-align:center;padding:40px 20px;border-radius:20px;margin-bottom:20px}
+        .hero h1{font-size:1.8em;margin-bottom:10px}
+        .hero p{opacity:0.9;margin-bottom:20px;font-size:0.95em}
+        .chat-box{background:#fff;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,0.1);overflow:hidden}
+        .chat-header{background:linear-gradient(135deg,#0f1d3d,#1e3a5f);color:#fff;padding:15px 20px;font-weight:600;font-size:1.1em}
+        .chat-messages{height:400px;overflow-y:auto;padding:20px;background:#f9fafb}
+        .msg{display:flex;gap:10px;margin-bottom:15px}
+        .msg.user{flex-direction:row-reverse}
+        .msg .avatar{width:35px;height:35px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2em;flex-shrink:0}
+        .msg.assistant .avatar{background:#1e3a5f}
+        .msg.user .avatar{background:#f59e0b}
+        .msg .bubble{padding:12px 16px;border-radius:18px;max-width:80%;font-size:0.95em;line-height:1.5}
+        .msg.assistant .bubble{background:#fff;border:1px solid #e5e7eb;border-top-left-radius:5px}
+        .msg.user .bubble{background:#1e3a5f;color:#fff;border-top-right-radius:5px}
+        .chat-input{display:flex;padding:15px;gap:10px;border-top:1px solid #e5e7eb}
+        .chat-input input{flex:1;padding:12px 18px;border:2px solid #e5e7eb;border-radius:30px;font-size:0.95em;outline:none}
+        .chat-input input:focus{border-color:#1e3a5f}
+        .chat-input button{background:linear-gradient(135deg,#f59e0b,#f97316);color:#fff;border:none;padding:12px 25px;border-radius:30px;font-weight:600;cursor:pointer}
+        .pages{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+        .pages a{background:#fff;padding:18px;border-radius:15px;text-decoration:none;color:#1a1a2e;box-shadow:0 2px 10px rgba(0,0,0,0.05);font-weight:600;font-size:0.9em;text-align:center;border:1px solid #e5e7eb}
+        .pages a .icon{font-size:1.8em;display:block;margin-bottom:5px}
+        .typing{display:flex;gap:5px;padding:10px 15px}
+        .typing span{width:8px;height:8px;background:#1e3a5f;border-radius:50%;animation:typing 1.4s infinite}
+        .typing span:nth-child(2){animation-delay:0.2s}
+        .typing span:nth-child(3){animation-delay:0.4s}
+        @keyframes typing{0%,60%,100%{opacity:0.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-5px)}}
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">Easy<span>Italia</span>Hub</div>
+        <button onclick="document.getElementById('chat').scrollIntoView({behavior:'smooth'})">💬 AI Assistant</button>
+    </nav>
+
+    <div class="container">
+        <div class="hero">
+            <h1>🇮🇹 La tua casa digitale in Italia</h1>
+            <p>Assistente AI per documenti, lavoro, affitto e money transfer. Pensato per la comunità srilankese e tutti gli immigrati.</p>
+        </div>
+
+        <div class="chat-box" id="chat">
+            <div class="chat-header">🤖 Easy Italia AI Assistant</div>
+            <div class="chat-messages" id="messages">
+                <div class="msg assistant">
+                    <div class="avatar">🤖</div>
+                    <div class="bubble">Ciao! Sono l'assistente di Easy Italia Hub. Chiedimi cosa vuoi su permessi di soggiorno, documenti, lavoro, affitto o money transfer! 🇮🇹🇱🇰</div>
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="userInput" placeholder="Scrivi la tua domanda..." onkeypress="if(event.key==='Enter')sendMsg()">
+                <button onclick="sendMsg()">Invia</button>
+            </div>
+        </div>
+
+        <div class="pages">
+            <a href="#money-transfer" onclick="showPage('money-transfer')">
+                <span class="icon">💶</span>Money Transfer
+            </a>
+            <a href="#documenti" onclick="showPage('documenti')">
+                <span class="icon">📄</span>Documenti
+            </a>
+            <a href="#lavoro" onclick="showPage('lavoro')">
+                <span class="icon">💼</span>Lavoro
+            </a>
+            <a href="#affitto" onclick="showPage('affitto')">
+                <span class="icon">🏠</span>Affitto
+            </a>
+        </div>
+
+        <div id="pageContent" style="display:none;background:#fff;border-radius:20px;padding:25px;margin-top:15px;box-shadow:0 10px 40px rgba(0,0,0,0.1)"></div>
+    </div>
+
+    <script>
+        const knowledge = {
+            'permesso': '📋 <b>Permesso di soggiorno</b><br><br>• Si rinnova 60 giorni prima della scadenza<br>• Richiedilo in Questura o col kit postale<br>• Documenti necessari: passaporto, foto, marca da bollo, contratto di lavoro o busta paga<br>• Costo: circa €30-80 a seconda del tipo<br>• Tempi: 1-3 mesi<br><br>🔗 Sito ufficiale: portaleimmigrazione.it',
+            'codice fiscale': '🆔 <b>Codice Fiscale</b><br><br>• Si richiede all\'Agenzia delle Entrate<br>• Gratuito<br>• Serve passaporto e permesso di soggiorno<br>• Puoi anche generarlo online se sei registrato<br><br>🔗 agenziaentrate.gov.it',
+            'lavoro': '💼 <b>Come trovare lavoro</b><br><br>• Centri per l\'Impiego della tua zona<br>• Siti: Indeed, LinkedIn, Infojobs, Subito<br>• Agenzie interinali (Adecco, Manpower, ecc.)<br>• Sportelli immigrati (Caritas, patronati)<br>• Gruppi Facebook della comunità srilankese<br><br>⚠️ Per lavorare serve il permesso di soggiorno che abilita al lavoro.',
+            'money': '💶 <b>Money Transfer verso Sri Lanka</b><br><br>• <b>Wise</b>: tasso reale, commissioni trasparenti<br>• <b>Remitly</b>: veloce, spesso promo nuovi utenti<br>• <b>Western Union</b>: tante agenzie, costi più alti<br>• <b>MoneyGram</b>: simile a Western Union<br><br>📊 Confronta sempre tasso di cambio e commissioni totali prima di inviare!',
+            'affitto': '🏠 <b>Affittare casa</b><br><br>Documenti necessari:<br>• Documento d\'identità<br>• Permesso di soggiorno<br>• Codice fiscale<br>• Prova di reddito (contratto, busta paga)<br><br>Contratti tipici: 4+4 anni o transitori<br>Attenzione a: caparra (max 3 mesi), spese condominiali',
+            'sanitaria': '🏥 <b>Tessera Sanitaria</b><br><br>• Si richiede alla ASL della tua zona<br>• Gratuita con permesso di soggiorno valido<br>• Serve per: medico di base, ospedali, farmaci<br>• Vale come codice fiscale<br><br>🔗 salute.gov.it',
+            'comunità': '🇱🇰 <b>Comunità Srilankese in Italia</b><br><br>• Templi buddisti principali a Roma e Milano<br>• Chiese cattoliche con messe in tamil/singalese<br>• Feste: Capodanno cingalese (aprile), Vesak (maggio)<br>• Gruppi Facebook e WhatsApp molto attivi<br>• Negozi alimentari srilankesi nelle grandi città',
+            'default': 'Ciao! 👋 Posso aiutarti su:<br><br>📋 Permesso di soggiorno<br>🆔 Codice fiscale<br>💼 Trovare lavoro<br>💶 Money transfer<br>🏠 Affittare casa<br>🏥 Tessera sanitaria<br>🇱🇰 Comunità srilankese<br><br>Scrivi la tua domanda e ti rispondo!'
+        };
+
+        function getResponse(msg) {
+            const m = msg.toLowerCase();
+            if (m.includes('permesso') || m.includes('soggiorno')) return knowledge['permesso'];
+            if (m.includes('codice fiscale') || m.includes('tessera sanitaria')) return m.includes('sanitaria') ? knowledge['sanitaria'] : knowledge['codice fiscale'];
+            if (m.includes('lavoro') || m.includes('job') || m.includes('contratto')) return knowledge['lavoro'];
+            if (m.includes('money') || m.includes('soldi') || m.includes('trasferimento') || m.includes('inviare')) return knowledge['money'];
+            if (m.includes('affitto') || m.includes('casa') || m.includes('appartamento')) return knowledge['affitto'];
+            if (m.includes('sanità') || m.includes('dottore') || m.includes('medico')) return knowledge['sanitaria'];
+            if (m.includes('comunità') || m.includes('cingalese') || m.includes('srilanka') || m.includes('sri lanka') || m.includes('tempio')) return knowledge['comunità'];
+            return knowledge['default'];
+        }
+
+        function sendMsg() {
+            const input = document.getElementById('userInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+            addMessage(msg, 'user');
+            input.value = '';
+            showTyping();
+            setTimeout(() => {
+                removeTyping();
+                addMessage(getResponse(msg), 'assistant');
+            }, 1000 + Math.random() * 1000);
+        }
+
+        function addMessage(text, role) {
+            const div = document.createElement('div');
+            div.className = 'msg ' + role;
+            div.innerHTML = `
+                <div class="avatar">${role === 'user' ? '👤' : '🤖'}</div>
+                <div class="bubble">${text}</div>
+            `;
+            document.getElementById('messages').appendChild(div);
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+        }
+
+        function showTyping() {
+            const div = document.createElement('div');
+            div.className = 'msg assistant';
+            div.id = 'typing';
+            div.innerHTML = '<div class="avatar">🤖</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>';
+            document.getElementById('messages').appendChild(div);
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+        }
+
+        function removeTyping() {
+            const el = document.getElementById('typing');
+            if (el) el.remove();
+        }
+
+        const pages = {
+            'money-transfer': '<h2>💶 Money Transfer verso Sri Lanka</h2><br><ul style="line-height:2"><li><b>Wise</b> – tasso di cambio reale, commissioni basse</li><li><b>Remitly</b> – veloce, promo nuovi utenti</li><li><b>Western Union / MoneyGram</b> – agenzie fisiche, costi più alti</li><li><b>Banche</b> – bonifico internazionale, cambio sfavorevole</li></ul><br><p style="color:#666">⚠️ Guida informativa. Confronta sempre le offerte.</p>',
+            'documenti': '<h2>📄 Documenti & Burocrazia</h2><br><ul style="line-height:2"><li><b>Permesso di soggiorno</b> – rinnova 60gg prima</li><li><b>Codice fiscale</b> – Agenzia Entrate</li><li><b>Tessera sanitaria</b> – ASL locale</li></ul>',
+            'lavoro': '<h2>💼 Lavoro in Italia</h2><br><ul style="line-height:2"><li>Centri per l\'Impiego</li><li>Indeed, LinkedIn, Infojobs</li><li>Agenzie interinali</li><li>Gruppi Facebook comunità</li></ul>',
+            'affitto': '<h2>🏠 Affitto</h2><br><ul style="line-height:2"><li>Documenti necessari</li><li>Contratti 4+4 o transitori</li><li>Attenzione alla caparra</li></ul>'
+        };
+
+        function showPage(name) {
+            const el = document.getElementById('pageContent');
+            el.innerHTML = pages[name] + '<br><button onclick="this.parentElement.style.display=\'none\'" style="background:#1e3a5f;color:#fff;border:none;padding:10px 20px;border-radius:20px">Chiudi</button>';
+            el.style.display = 'block';
+            el.scrollIntoView({behavior:'smooth'});
+        }
+    </script>
+</body>
+</html>
